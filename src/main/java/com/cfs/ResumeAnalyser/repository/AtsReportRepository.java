@@ -14,4 +14,10 @@ public interface AtsReportRepository
     List<AtsReport> findByUser(User user);
 
     List<AtsReport> findByUserOrderByCreatedAtDesc(User user);
+
+    List<AtsReport>
+    findByUserAndJobDescriptionContainingIgnoreCase(
+            User user,
+            String keyword
+    );
 }

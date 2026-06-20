@@ -237,4 +237,49 @@ public class ResumeController {
 
         return "Report sent successfully";
     }
+
+    @GetMapping("/search-history")
+    public List<ResumeAnalysis> searchResumeHistory(
+            @RequestParam String keyword) {
+
+        String email =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getName();
+
+        User user =
+                userRepository
+                        .findByEmail(email)
+                        .orElseThrow();
+
+        return resumeRepository
+                .findByUserAndFilenameContainingIgnoreCase(
+                        user,
+                        keyword
+                );
+    }
+    @GetMapping("/search-ats-history")
+    public List<AtsReport> searchAtsHistory(
+            @RequestParam String keyword) {
+
+        String email =
+                SecurityContextHolder
+                        .getContext()
+                        .getAuthentication()
+                        .getName();
+
+        User user =
+                userRepository
+                        .findByEmail(email)
+                        .orElseThrow();
+
+        return atsRepository
+                .findByUserAndJobDescriptionContainingIgnoreCase(
+                        user,
+                        keyword
+                );
+    }
+
+
 }

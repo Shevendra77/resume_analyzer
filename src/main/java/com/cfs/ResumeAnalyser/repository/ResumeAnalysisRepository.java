@@ -14,5 +14,11 @@ public interface ResumeAnalysisRepository
 
     long countByUser(User user);
 
+    List<ResumeAnalysis>
+    findByUserAndFilenameContainingIgnoreCase(
+            User user,
+            String keyword
+    );
+
 
 }
