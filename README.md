@@ -33,45 +33,47 @@ It helps users analyze resumes, check ATS compatibility against job descriptions
 
 ## ✨ Features <a name="features"></a>
 
-🔐 Authentication — Secure user registration and login using JWT Authentication
+🔐 **Secure Authentication** — User registration and login powered by JWT-based authentication with Spring Security.
 
-📄 Resume Analyzer — Upload resumes and get AI-powered analysis reports
+📄 **AI Resume Analysis** — Upload resumes in PDF, DOC, or DOCX format and receive comprehensive AI-generated analysis reports.
 
-📊 Resume Quality Score — Evaluate overall resume quality and effectiveness
+📊 **Resume Quality Assessment** — Evaluate resume effectiveness through an intelligent scoring system and actionable feedback.
 
-🧠 Key Skills Detection — Automatically identify technical and professional skills
+🧠 **Key Skills Extraction** — Automatically identify and highlight technical, professional, and domain-specific skills.
 
-💡 Improvement Suggestions — Personalized recommendations to strengthen resumes
+💡 **Personalized Improvement Suggestions** — Receive AI-driven recommendations to enhance resume quality and recruiter appeal.
 
-📝 Resume Summary — Generate an AI-based professional summary
+📝 **Professional Resume Summary** — Generate concise and impactful summaries tailored to the uploaded resume.
 
-🎯 ATS Checker — Compare resumes against job descriptions
+🎯 **ATS Compatibility Checker** — Compare resumes against job descriptions to measure Applicant Tracking System (ATS) compatibility.
 
-📈 ATS Score Calculation — Measure resume compatibility with ATS systems
+📈 **ATS Score Calculation** — Analyze resume-job matching and generate an ATS compatibility score.
 
-✅ Matched Keywords Detection — Identify keywords matching the job description
+✅ **Matched Keywords Detection** — Identify keywords and skills successfully aligned with job requirements.
 
-❌ Missing Keywords Analysis — Highlight important missing keywords
+❌ **Missing Keywords Analysis** — Highlight missing keywords and competencies that can improve ATS performance.
 
-📚 Resume History — Access all previously generated resume analysis reports
+📚 **Resume Analysis History** — Access and review all previously generated resume analysis reports.
 
-📊 ATS History — View and manage past ATS evaluation reports
+📊 **ATS Report History** — Store and manage ATS evaluation reports for future reference.
 
-🔍 Search History — Search Resume and ATS reports instantly
+🔍 **Advanced Search Functionality** — Quickly search and filter resume and ATS history records.
 
-📧 Email Reports — Send analysis reports directly via email
+📧 **Email Report Delivery** — Send AI-generated reports directly to email with a single click.
 
-📄 PDF Export — Download professional PDF reports
+📄 **PDF Report Export** — Download detailed analysis reports in a professional PDF format.
 
-👤 User Dashboard — View user analytics and activity
+👤 **Interactive User Dashboard** — Monitor activity, analytics, and report statistics from a centralized dashboard.
 
-📌 Latest ATS Score — Track most recent ATS performance
+📌 **Latest Performance Tracking** — Instantly view the most recent ATS score and analysis results.
 
-🔒 Secure APIs — Protected endpoints using Spring Security
+🔒 **Enterprise-Grade Security** — Secure backend APIs using Spring Security and role-based access control.
 
-🤖 Gemini AI Integration — AI-powered resume analysis
+🤖 **Gemini AI Integration** — Leverage Google's Gemini AI for intelligent resume analysis and ATS evaluation.
 
-📱 Responsive UI — Mobile-friendly modern interface
+📱 **Responsive User Interface** — Optimized experience across desktops, tablets, and mobile devices.
+
+⚡ **Real-Time Processing** — Generate resume analysis and ATS reports instantly with fast AI-powered processing.
 
 ---
 
@@ -214,19 +216,19 @@ GET /api/user/dashboard
 ### Clone Repository
 
 ```bash
-git clone https://github.com/Shevendra77/ResumeAI.git
+git clone https://github.com/Shevendra77/resume_analyzer.git
 ```
 
 ### Create Database
 
 ```sql
-CREATE DATABASE resume_ai;
+CREATE DATABASE resume_analyser;
 ```
 
 ### Configure Application
 
 ```properties
-spring.datasource.url=jdbc:mysql://localhost:3306/resume_ai
+spring.datasource.url=jdbc:mysql://localhost:3306/resume_analyser
 spring.datasource.username=root
 spring.datasource.password=YOUR_PASSWORD
 
@@ -308,7 +310,6 @@ Logout
 
 💻 GitHub: https://github.com/Shevendra77
 
-🔗 LinkedIn: Add Your LinkedIn Profile
 
 ---
 
