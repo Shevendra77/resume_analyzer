@@ -46,6 +46,9 @@ public class SecurityConfig {
                         // IMPORTANT: allow error endpoint
                         .requestMatchers("/error").permitAll()
 
+                        // Cache APIs - User + Admin dono
+                        .requestMatchers("/api/cache/**").hasAnyRole("USER", "ADMIN")
+
                         // Admin APIs
                         .requestMatchers(
                                 "/api/admin/**",
@@ -58,7 +61,6 @@ public class SecurityConfig {
                                 "/api/user/**",
                                 "/api/resume/**",
                                 "/ats-check/**"
-
                         ).hasAnyRole("USER", "ADMIN")
 
                         .anyRequest().authenticated()

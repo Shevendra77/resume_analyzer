@@ -1,4 +1,3 @@
-
 package com.cfs.ResumeAnalyser.dto;
 
 public class DashboardResponse {
@@ -7,6 +6,8 @@ public class DashboardResponse {
     private long totalAts;
     private int latestScore;
     private String status;
+
+    public DashboardResponse() {}
 
     public DashboardResponse(
             long totalResume,
