@@ -81,7 +81,7 @@ It helps users analyze resumes, check ATS compatibility against job descriptions
 
 | Technology | Purpose |
 |------------|----------|
-| Java 17 | Backend Language |
+| Java 21 | Backend Language |
 | Spring Boot | Backend Framework |
 | Spring Security | Security |
 | JWT | Authentication |
