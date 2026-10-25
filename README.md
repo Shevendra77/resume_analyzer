@@ -3,13 +3,14 @@
 ![Java](https://img.shields.io/badge/Java-17-blue)
 ![Spring Boot](https://img.shields.io/badge/SpringBoot-Backend-success)
 ![MySQL](https://img.shields.io/badge/MySQL-Database-orange)
+![Redis](https://img.shields.io/badge/Redis-Caching-red)
 ![JWT](https://img.shields.io/badge/JWT-Authentication-yellow)
 ![Gemini AI](https://img.shields.io/badge/Gemini-AI-purple)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
 
-🚀 **ResumeAI** is a full-stack AI-powered Resume Analysis and ATS Checking platform built using Spring Boot, JWT Authentication, Gemini AI, MySQL, HTML, CSS, and JavaScript.
+**ResumeAI** is a full-stack AI-powered Resume Analysis and ATS Checking platform built using Spring Boot, JWT Authentication, Gemini AI, MySQL, Redis, HTML, CSS, and JavaScript.
 
 It helps users analyze resumes, check ATS compatibility against job descriptions, generate AI-powered reports, and manage analysis history.
 
@@ -19,6 +20,7 @@ It helps users analyze resumes, check ATS compatibility against job descriptions
 
 - [Features](#features)
 - [Tech Stack](#tech-stack)
+- [Redis Caching Architecture](#redis-caching-architecture)
 - [Project Structure](#project-structure)
 - [Database Schema](#database-schema)
 - [API Reference](#api-reference)
@@ -31,125 +33,204 @@ It helps users analyze resumes, check ATS compatibility against job descriptions
 
 ---
 
-## ✨ Features <a name="features"></a>
+## ✨ Features
 
-🔐 **Secure Authentication** — User registration and login powered by JWT-based authentication with Spring Security.
-
-📄 **AI Resume Analysis** — Upload resumes in PDF, DOC, or DOCX format and receive comprehensive AI-generated analysis reports.
-
-📊 **Resume Quality Assessment** — Evaluate resume effectiveness through an intelligent scoring system and actionable feedback.
-
-🧠 **Key Skills Extraction** — Automatically identify and highlight technical, professional, and domain-specific skills.
-
-💡 **Personalized Improvement Suggestions** — Receive AI-driven recommendations to enhance resume quality and recruiter appeal.
-
-📝 **Professional Resume Summary** — Generate concise and impactful summaries tailored to the uploaded resume.
-
-🎯 **ATS Compatibility Checker** — Compare resumes against job descriptions to measure Applicant Tracking System (ATS) compatibility.
-
-📈 **ATS Score Calculation** — Analyze resume-job matching and generate an ATS compatibility score.
-
-✅ **Matched Keywords Detection** — Identify keywords and skills successfully aligned with job requirements.
-
-❌ **Missing Keywords Analysis** — Highlight missing keywords and competencies that can improve ATS performance.
-
-📚 **Resume Analysis History** — Access and review all previously generated resume analysis reports.
-
-📊 **ATS Report History** — Store and manage ATS evaluation reports for future reference.
-
-🔍 **Advanced Search Functionality** — Quickly search and filter resume and ATS history records.
-
-📧 **Email Report Delivery** — Send AI-generated reports directly to email with a single click.
-
-📄 **PDF Report Export** — Download detailed analysis reports in a professional PDF format.
-
-👤 **Interactive User Dashboard** — Monitor activity, analytics, and report statistics from a centralized dashboard.
-
-📌 **Latest Performance Tracking** — Instantly view the most recent ATS score and analysis results.
-
-🔒 **Enterprise-Grade Security** — Secure backend APIs using Spring Security and role-based access control.
-
-🤖 **Gemini AI Integration** — Leverage Google's Gemini AI for intelligent resume analysis and ATS evaluation.
-
-📱 **Responsive User Interface** — Optimized experience across desktops, tablets, and mobile devices.
-
-⚡ **Real-Time Processing** — Generate resume analysis and ATS reports instantly with fast AI-powered processing.
+- 🔐 **Secure Authentication** — User registration and login powered by JWT-based authentication with Spring Security.
+- 📄 **AI Resume Analysis** — Upload resumes in PDF, DOC, or DOCX format and receive AI-generated analysis reports.
+- 📊 **Resume Quality Assessment** — Evaluate resume effectiveness through an intelligent scoring system.
+- 🧠 **Key Skills Extraction** — Identify technical, professional, and domain-specific skills.
+- 💡 **Personalized Improvement Suggestions** — Receive AI-driven recommendations to enhance resume quality.
+- 📝 **Professional Resume Summary** — Generate concise summaries tailored to the uploaded resume.
+- 🎯 **ATS Compatibility Checker** — Compare resumes against job descriptions.
+- 📈 **ATS Score Calculation** — Generate an ATS compatibility score.
+- ✅ **Matched Keywords Detection** — Identify skills aligned with job requirements.
+- ❌ **Missing Keywords Analysis** — Highlight missing keywords and competencies.
+- 📚 **Resume Analysis History** — Review previously generated resume analysis reports.
+- 📊 **ATS Report History** — Access previous ATS evaluation reports.
+- 🔍 **Advanced Search Functionality** — Search and filter resume and ATS history records.
+- 📧 **Email Report Delivery** — Send AI-generated reports through email.
+- 📄 **PDF Report Export** — Download reports in PDF format.
+- 👤 **Interactive User Dashboard** — Monitor activity and report statistics.
+- 📌 **Latest Performance Tracking** — View the most recent ATS score.
+- 🔒 **Secure Backend APIs** — Spring Security and role-based access control.
+- 🤖 **Gemini AI Integration** — Use Google's Gemini AI for resume analysis and ATS evaluation.
+- ⚡ **Redis Dashboard Caching** — Cache dashboard responses to reduce repeated database queries.
+- 📱 **Responsive User Interface** — Support desktop, tablet, and mobile screens.
 
 ---
 
-## 🛠️ Tech Stack <a name="tech-stack"></a>
+## 🛠️ Tech Stack
 
 | Technology | Purpose |
-|------------|----------|
-| Java 21 | Backend Language |
-| Spring Boot | Backend Framework |
-| Spring Security | Security |
-| JWT | Authentication |
-| Spring Data JPA | ORM |
-| Hibernate | Database Layer |
-| MySQL | Database |
-| Gemini AI | Resume Analysis |
-| Apache Tika | Resume Parsing |
-| HTML | Frontend |
+|---|---|
+| Java | Backend language |
+| Spring Boot | Backend framework |
+| Spring Security | Authentication and authorization |
+| JWT | Stateless authentication |
+| Spring Data JPA | Database access |
+| Hibernate | ORM |
+| MySQL | Persistent database |
+| Redis | Dashboard response caching |
+| Spring Cache | Cache abstraction |
+| Jackson | JSON serialization |
+| Gemini AI | AI-powered resume analysis |
+| Apache Tika | Resume document parsing |
+| HTML | Frontend structure |
 | CSS | Styling |
-| JavaScript | Frontend Logic |
+| JavaScript | Frontend logic |
+| Maven | Build and dependency management |
 
 ---
-## 📁 Project Structure <a name="project-structure"></a>
+
+## ⚡ Redis Caching Architecture
+
+ResumeAI uses Redis to cache dashboard responses. Spring Cache manages cache operations through `RedisCacheManager`.
+
+This reduces repeated execution of dashboard database queries when the same user requests their dashboard again while the cached entry remains valid.
+
+### Architecture Diagram
+
+```mermaid
+flowchart TD
+    A["User Opens Dashboard"] --> B["UserController"]
+    B --> C["DashboardService.getDashboard(email)"]
+    C --> D{"Dashboard Cache Lookup"}
+
+    D -->|Cache HIT| E["Return Cached DashboardResponse"]
+    D -->|Cache MISS| F[("MySQL Database")]
+
+    F --> G["Calculate Dashboard Statistics"]
+    G --> H["Create DashboardResponse"]
+    H --> I[("Redis Cache")]
+    I --> J["Return DashboardResponse"]
+
+    subgraph REDIS["Redis Cache Configuration"]
+        K["Cache Name: dashboard"]
+        L["Cache Key: User Email"]
+        M["TTL: 10 Minutes"]
+        N["Value: DashboardResponse JSON"]
+    end
+
+    I --- REDIS
+
+    O["Resume or ATS Report Saved"] --> P["Evict Dashboard Cache"]
+    P -.-> D
+
+    style D fill:#fff2cc,stroke:#d6a400,color:#222
+    style F fill:#dceeff,stroke:#3178c6,color:#222
+    style I fill:#fde2e2,stroke:#d9534f,color:#222
+    style REDIS fill:#fff5f5,stroke:#d9534f,color:#222
+```
+
+### How Redis Caching Works
+
+1. The user opens the dashboard.
+2. `DashboardService.getDashboard(email)` checks the cache using the user's email.
+3. **Cache HIT:** If a cached entry exists, Spring Cache returns the cached `DashboardResponse` without executing the method body.
+4. **Cache MISS:** If no cached entry exists, the service fetches the dashboard data from MySQL and creates a response.
+5. Spring Cache stores the response in Redis.
+6. The cached entry expires after 10 minutes.
+7. When resume or ATS data changes, the corresponding dashboard cache should be evicted so the next request can fetch fresh data.
+
+### Redis Configuration
+
+| Property | Value |
+|---|---|
+| Cache manager | `RedisCacheManager` |
+| Cache name | `dashboard` |
+| Cache key | User email |
+| Cache expiration | 10 minutes |
+| Serialization | JSON using Jackson |
+| Redis host | `localhost` |
+| Redis port | `6379` |
+| Redis container | `redis-server` |
+
+### Cache Implementation
+
+The dashboard cache is applied using Spring's `@Cacheable` annotation:
+
+```java
+@Cacheable(value = "dashboard", key = "#email")
+public DashboardResponse getDashboard(String email) {
+    // Fetch dashboard statistics from MySQL
+    // Return DashboardResponse
+}
+```
+
+The existing service also defines a cache eviction method:
+
+```java
+@CacheEvict(value = "dashboard", key = "#email")
+public void evictDashboardCache(String email) {
+    System.out.println("CACHE EVICTED FOR: " + email);
+}
+```
+
+This method must be called after the relevant resume or ATS report has been saved if you want the dashboard to refresh immediately.
+
+### Benefits of Redis
+
+- Reduces repeated dashboard database queries.
+- Reuses cached responses for repeated requests.
+- Can improve dashboard response time.
+- Reduces unnecessary database processing.
+- Automatically expires cached entries after the configured TTL.
+
+---
+
+## 📁 Project Structure
 
 ```text
 ResumeAnalyser
-│
-├── .idea
-├── .mvn
 │
 ├── src
 │   └── main
 │       └── java
 │           └── com.cfs.ResumeAnalyser
-│
+│               │
 │               ├── config
-│               │   └── CorsConfig
+│               │   ├── CorsConfig.java
+│               │   └── RedisConfig.java
 │               │
 │               ├── controller
-│               │   ├── AdminController
-│               │   ├── AuthController
-│               │   ├── ResumeController
-│               │   └── UserController
+│               │   ├── AdminController.java
+│               │   ├── AuthController.java
+│               │   ├── ResumeController.java
+│               │   └── UserController.java
 │               │
 │               ├── dto
-│               │   ├── DashboardResponse
-│               │   ├── DashboardStats
-│               │   ├── LoginRequest
-│               │   ├── LoginResponse
-│               │   ├── RegisterRequest
-│               │   └── ResumeAnalysisResponse
+│               │   ├── DashboardResponse.java
+│               │   ├── DashboardStats.java
+│               │   ├── LoginRequest.java
+│               │   ├── LoginResponse.java
+│               │   ├── RegisterRequest.java
+│               │   └── ResumeAnalysisResponse.java
 │               │
 │               ├── exception
 │               │
 │               ├── model
-│               │   ├── AtsReport
-│               │   ├── ResumeAnalysis
-│               │   ├── ResumeAnalysisResponse
-│               │   └── User
+│               │   ├── AtsReport.java
+│               │   ├── ResumeAnalysis.java
+│               │   └── User.java
 │               │
 │               ├── repository
-│               │   ├── AtsReportRepository
-│               │   ├── ResumeAnalysisRepository
-│               │   └── UserRepository
+│               │   ├── AtsReportRepository.java
+│               │   ├── ResumeAnalysisRepository.java
+│               │   └── UserRepository.java
 │               │
 │               ├── security
-│               │   ├── JwtAuthenticationFilter
-│               │   ├── JwtUtil
-│               │   └── SecurityConfig
+│               │   ├── JwtAuthenticationFilter.java
+│               │   ├── JwtUtil.java
+│               │   └── SecurityConfig.java
 │               │
 │               ├── service
-│               │   ├── EmailService
-│               │   ├── GeminiService
-│               │   ├── PdfService
-│               │   └── ResumeService
+│               │   ├── DashboardService.java
+│               │   ├── EmailService.java
+│               │   ├── GeminiService.java
+│               │   ├── PdfService.java
+│               │   └── ResumeService.java
 │               │
-│               └── ResumeAnalyserApplication
+│               └── ResumeAnalyserApplication.java
 │
 ├── frontend
 │   ├── index.html
@@ -178,7 +259,11 @@ ResumeAnalyser
 └── README.md
 ```
 
-## 🔗 API Reference <a name="api-reference"></a>
+*Note: Adjust the tree to match the actual files in your repository.*
+
+---
+
+## 🔗 API Reference
 
 ### Authentication
 
@@ -211,12 +296,13 @@ GET /api/user/dashboard
 
 ---
 
-## 🚀 Getting Started <a name="getting-started"></a>
+## 🚀 Getting Started
 
 ### Clone Repository
 
 ```bash
 git clone https://github.com/Shevendra77/resume_analyzer.git
+cd resume_analyzer
 ```
 
 ### Create Database
@@ -227,17 +313,44 @@ CREATE DATABASE resume_analyser;
 
 ### Configure Application
 
+Configure your database credentials and API keys using environment variables or your local configuration.
+
 ```properties
 spring.datasource.url=jdbc:mysql://localhost:3306/resume_analyser
-spring.datasource.username=root
-spring.datasource.password=YOUR_PASSWORD
+spring.datasource.username=${DB_USERNAME}
+spring.datasource.password=${DB_PASSWORD}
 
-gemini.api.key=YOUR_API_KEY
+gemini.api.key=${GEMINI_API_KEY}
+
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+```
+
+Configure the other required environment variables, including `JWT_SECRET` and email credentials, if those features are enabled.
+
+### Start Redis
+
+If your existing Redis container is named `redis-server`, start it with:
+
+```bash
+docker start redis-server
+```
+
+Verify that it is running:
+
+```bash
+docker ps
+```
+
+### Install Dependencies
+
+```bash
+mvn clean install
 ```
 
 ---
 
-## ▶ Running the Application <a name="running-the-application"></a>
+## ▶ Running the Application
 
 ### Backend
 
@@ -245,7 +358,7 @@ gemini.api.key=YOUR_API_KEY
 mvn spring-boot:run
 ```
 
-Runs on:
+Backend URL:
 
 ```text
 http://localhost:8080
@@ -253,11 +366,9 @@ http://localhost:8080
 
 ### Frontend
 
-```text
-Open With Live Server
-```
+Open the frontend using VS Code Live Server.
 
-Runs on:
+Frontend URL:
 
 ```text
 http://localhost:5500
@@ -265,7 +376,7 @@ http://localhost:5500
 
 ---
 
-## 👨‍💻 User Flow <a name="user-flow"></a>
+## 👨‍💻 User Flow
 
 ```text
 Register
@@ -287,7 +398,9 @@ Logout
 
 ---
 
-## 📸 Screenshots <a name="screenshots"></a>
+## 📸 Screenshots
+
+Add screenshots of the following pages:
 
 - Home Page
 - Login Page
@@ -298,22 +411,19 @@ Logout
 - Resume History
 - ATS History
 
-(Add screenshots here)
-
 ---
 
-## 👨‍💻 Author <a name="author"></a>
+## 👨‍💻 Author
 
 ### Shevendra Chandel
 
 📧 Email: shevendrachandel@gmail.com
 
-💻 GitHub: https://github.com/Shevendra77
-
+💻 GitHub: [Shevendra77](https://github.com/Shevendra77)
 
 ---
 
-## 📄 License <a name="license"></a>
+## 📄 License
 
 This project is licensed under the MIT License.
 
