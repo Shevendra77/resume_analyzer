@@ -84,97 +84,148 @@ It helps users analyze resumes, check ATS compatibility against job descriptions
 
 ## ⚡ Redis Caching Architecture
 
-ResumeAI uses Redis to cache dashboard responses. Spring Cache manages cache operations through `RedisCacheManager`.
+### Overview
 
-This reduces repeated execution of dashboard database queries when the same user requests their dashboard again while the cached entry remains valid.
+ResumeAI uses Redis to cache dashboard responses and reduce repeated
+database queries. Spring Boot's caching abstraction manages the cache,
+and Redis stores the cached `DashboardResponse`.
 
-### Architecture Diagram
+### Architecture
 
 ```mermaid
 flowchart TD
-    A["User Opens Dashboard"] --> B["UserController"]
-    B --> C["DashboardService.getDashboard(email)"]
-    C --> D{"Dashboard Cache Lookup"}
+    A["User requests dashboard"] --> B["DashboardService.getDashboard(email)"]
+    B --> C{"Cached response exists?"}
 
-    D -->|Cache HIT| E["Return Cached DashboardResponse"]
-    D -->|Cache MISS| F[("MySQL Database")]
+    C -->|Cache hit| D["Return cached DashboardResponse"]
+    C -->|Cache miss| E[("MySQL database")]
 
-    F --> G["Calculate Dashboard Statistics"]
-    G --> H["Create DashboardResponse"]
-    H --> I[("Redis Cache")]
-    I --> J["Return DashboardResponse"]
+    E --> F["Fetch user and dashboard statistics"]
+    F --> G["Build DashboardResponse"]
+    G --> H[("Save response in Redis")]
+    H --> I["Return DashboardResponse"]
 
-    subgraph REDIS["Redis Cache Configuration"]
-        K["Cache Name: dashboard"]
-        L["Cache Key: User Email"]
-        M["TTL: 10 Minutes"]
-        N["Value: DashboardResponse JSON"]
-    end
+    D --> J["Send response to user"]
+    I --> J
 
-    I --- REDIS
-
-    O["Resume or ATS Report Saved"] --> P["Evict Dashboard Cache"]
-    P -.-> D
-
-    style D fill:#fff2cc,stroke:#d6a400,color:#222
-    style F fill:#dceeff,stroke:#3178c6,color:#222
-    style I fill:#fde2e2,stroke:#d9534f,color:#222
-    style REDIS fill:#fff5f5,stroke:#d9534f,color:#222
+    K["Resume analysis or ATS report saved"] --> L["Evict dashboard cache"]
+    L -.-> C
 ```
 
-### How Redis Caching Works
+### Cache behavior
 
-1. The user opens the dashboard.
-2. `DashboardService.getDashboard(email)` checks the cache using the user's email.
-3. **Cache HIT:** If a cached entry exists, Spring Cache returns the cached `DashboardResponse` without executing the method body.
-4. **Cache MISS:** If no cached entry exists, the service fetches the dashboard data from MySQL and creates a response.
-5. Spring Cache stores the response in Redis.
-6. The cached entry expires after 10 minutes.
-7. When resume or ATS data changes, the corresponding dashboard cache should be evicted so the next request can fetch fresh data.
+1.  **Cache miss:** The first request for a user's dashboard runs
+    `getDashboard(email)`, reads the required data from MySQL, creates a
+    `DashboardResponse`, and stores the result in Redis.
+2.  **Cache hit:** A later request with the same email returns the
+    cached response without running the annotated service method again.
+3.  **Expiration:** Cached entries expire after 10 minutes.
+4.  **Eviction:** After a resume analysis or ATS report is saved, call
+    `evictDashboardCache(email)` so the next dashboard request can fetch
+    updated data. The diagram's eviction path works only if the
+    application actually calls this method.
 
-### Redis Configuration
+### Configuration
 
-| Property | Value |
-|---|---|
-| Cache manager | `RedisCacheManager` |
-| Cache name | `dashboard` |
-| Cache key | User email |
-| Cache expiration | 10 minutes |
-| Serialization | JSON using Jackson |
-| Redis host | `localhost` |
-| Redis port | `6379` |
-| Redis container | `redis-server` |
+#### `application.properties`
 
-### Cache Implementation
+```properties
+spring.data.redis.host=localhost
+spring.data.redis.port=6379
+spring.data.redis.repositories.enabled=false
+```
 
-The dashboard cache is applied using Spring's `@Cacheable` annotation:
+#### `RedisConfig.java`
+
+Configure a `RedisCacheManager` with a 10-minute TTL, string keys, JSON
+values, and null caching disabled. Adapt the serializer constructor to
+match the `ObjectMapper` and Spring Data Redis version used by the
+project.
+
+```java
+RedisCacheConfiguration config = RedisCacheConfiguration.defaultCacheConfig()
+    .entryTtl(Duration.ofMinutes(10))
+    .serializeKeysWith(
+        RedisSerializationContext.SerializationPair.fromSerializer(
+            new StringRedisSerializer()
+        )
+    )
+    .serializeValuesWith(
+        RedisSerializationContext.SerializationPair.fromSerializer(
+            new GenericJackson2JsonRedisSerializer(objectMapper)
+        )
+    )
+    .disableCachingNullValues();
+
+RedisCacheManager cacheManager = RedisCacheManager.builder(connectionFactory)
+    .cacheDefaults(config)
+    .build();
+```
+
+Ensure caching is enabled once in your application, for example by
+placing `@EnableCaching` on the main Spring Boot application class or a
+configuration class.
+
+#### `DashboardService.java`
 
 ```java
 @Cacheable(value = "dashboard", key = "#email")
 public DashboardResponse getDashboard(String email) {
-    // Fetch dashboard statistics from MySQL
-    // Return DashboardResponse
+    // Fetch dashboard data from MySQL and return DashboardResponse.
 }
 ```
 
-The existing service also defines a cache eviction method:
+To remove a user's cached dashboard:
 
 ```java
 @CacheEvict(value = "dashboard", key = "#email")
 public void evictDashboardCache(String email) {
-    System.out.println("CACHE EVICTED FOR: " + email);
+    // Spring removes the matching cache entry.
 }
 ```
 
-This method must be called after the relevant resume or ATS report has been saved if you want the dashboard to refresh immediately.
+Call the eviction method after the relevant resume-analysis or
+ATS-report save operation. The method declaration alone does not
+automatically invalidate the cache.
 
-### Benefits of Redis
+### Verify Redis
 
-- Reduces repeated dashboard database queries.
-- Reuses cached responses for repeated requests.
-- Can improve dashboard response time.
-- Reduces unnecessary database processing.
-- Automatically expires cached entries after the configured TTL.
+Check that the Redis container is running:
+
+```bash
+docker ps
+```
+
+Connect using the container name shown by `docker ps`. If the container
+is named `redis-server`, run:
+
+```bash
+docker exec -it redis-server redis-cli
+```
+
+Test the connection:
+
+```redis
+PING
+```
+
+Expected response:
+
+```text
+PONG
+```
+
+### Benefits
+
+-   **Faster repeated dashboard requests:** Cache hits avoid re-running
+    the dashboard service method.
+-   **Lower database load:** Cached responses reduce repeated dashboard
+    queries.
+-   **Time-to-live (TTL):** Entries expire after 10 minutes.
+-   **Cache invalidation:** Eviction allows the next request to retrieve
+    updated dashboard data.
+-   **JSON serialization:** Dashboard response objects are stored using
+    the configured JSON serializer.
 
 ---
 
